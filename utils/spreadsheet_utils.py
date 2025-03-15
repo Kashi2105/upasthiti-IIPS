@@ -6,7 +6,7 @@ import re
 def authenticate_and_get_sheet(sheet_url):
      # Authenticate using the Service Account JSON file
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    credentials = ServiceAccountCredentials.from_json_keyfile_name("Cred.json", scope)
+    credentials = ServiceAccountCredentials.from_json_keyfile_name("/etc/secrets/Cred.json", scope)
     client = gspread.authorize(credentials)
     # Open the Google Sheet by URL
     workbook = client.open_by_url(sheet_url)
