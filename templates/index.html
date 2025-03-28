@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Attendance Management System</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #3498db;
+            --background-color: #ecf0f1;
+            --text-color: #2c3e50;
+            --hover-color: #e8f4f8;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 2rem;
+        }
+
+        /* Navbar */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--primary-color);
+            padding: 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        /* Navbar Content - Center Aligned */
+        .navbar-content {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+        }
+
+        /* University and College Logos */
+        .logo {
+            height: 40px;
+            width: 40px;
+            object-fit: contain;
+        }
+
+        /* College Name - Centered */
+        .college-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        /* Logout Button - Positioned to the right */
+        .logout-container {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .logout-btn {
+            background: #e74c3c;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        /* Heading Styles */
+        .heading-container {
+            text-align: center;
+            margin-top: 90px;
+        }
+
+        .main-heading {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 5px; /* Reduced space */
+        }
+
+        .sub-heading {
+            font-size: 1.3rem;
+            font-weight: 400;
+            color: var(--secondary-color);
+            margin-top: 0;
+        }
+
+        /* Mobile-optimized container */
+        .container {
+            padding: 70px 1rem 1rem 1rem;
+            max-width: 100%;
+        }
+
+        .search-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1rem;
+            margin-top: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        /* Mobile-optimized form */
+        .search-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .form-group {
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .mandatory::after {
+            content: '*';
+            color: #e74c3c;
+            margin-left: 4px;
+        }
+
+        /* Mobile-optimized inputs */
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 1rem;
+            background-color: #f8f9fa;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        /* Custom select arrow */
+        .form-group.select-group::after {
+            content: '';
+            position: absolute;
+            right: 12px;
+            top: 65%;
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 5px solid #666;
+            pointer-events: none;
+        }
+
+        /* Mobile-optimized button */
+        .search-btn {
+            background: #3498db;
+            color: white;
+            padding: 1rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 500;
+            margin-top: 1rem;
+            box-shadow: 0 2px 5px rgba(52,152,219,0.2);
+        }
+
+        .search-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Bottom fixed action button for mobile */
+        .floating-search-btn {
+            position: fixed;
+            bottom: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 2rem);
+            background: #3498db;
+            color: white;
+            padding: 1rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 500;
+            box-shadow: 0 4px 15px rgba(52,152,219,0.3);
+            z-index: 1000;
+        }
+
+        /* Mobile-optimized select dropdowns */
+        @supports (-webkit-touch-callout: none) {
+            /* iOS-specific styles */
+            select {
+                background-color: #f8f9fa !important;
+            }
+        }
+
+        /* Loading spinner */
+        .loading {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 2px solid #3498db;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Tablet and desktop adjustments */
+        @media (min-width: 768px) {
+            .container {
+                max-width: 768px;
+                margin: 0 auto;
+                padding-top: 90px;
+            }
+
+            .search-form {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1.5rem;
+            }
+
+            .floating-search-btn {
+                display: none;
+            }
+
+            .search-btn {
+                grid-column: span 2;
+            }
+        }
+
+        /* Active states for better touch feedback */
+        .form-group select:active,
+        .form-group input:active {
+            background-color: #fff;
+        }
+
+        .search-btn {
+            background: #3498db;
+            color: white;
+            padding: 1rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 500;
+            margin-top: 1rem;
+            box-shadow: 0 2px 5px rgba(52,152,219,0.2);
+        }
+
+        .search-btn:active {
+            transform: scale(0.98);
+        }
+
+        .options-container {
+            display: none;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .options-container button {
+            margin: 0.5rem;
+            padding: 0.7rem 1.2rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            color: white;
+        }
+        
+        #fetchbuttonforsubject { 
+            background: #3498db;
+            margin: 0.5rem;
+            padding: 0.7rem 1.2rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            color: white; }
+        #overall-btn { background: #3498db; }
+        #student-btn { background: #27ae60; }
+        #subject-btn { background: #e67e22; }
+
+        .attendance-data {
+            margin-top: 1rem;
+            display: none;
+            padding: 1rem;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+        .table-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+        }
+
+        .table-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background-color: var(--primary-color);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: white;
+            font-size: 2rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .table-wrapper {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow-x: auto; /* Enables horizontal scrolling */
+            white-space: nowrap; /* Prevents text from wrapping */
+            margin-bottom: 2rem;
+            margin-top: 1rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            white-space: nowrap;
+        }
+
+        th {
+            background-color: var(--secondary-color);
+            color: white;
+            font-weight: 600;
+            padding: 1rem;
+            text-align: left;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 0.95rem;
+        }
+
+        tr:hover {
+            background-color: var(--hover-color);
+            transition: background-color 0.2s ease;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+            font-style: italic;
+            background-color: #f9f9f9;
+        }
+
+        @media (max-width: 1024px) {
+            .table-wrapper {
+                overflow-x: auto;
+            }
+
+            body {
+                padding: 1rem;
+            }
+        }
+
+         .download-bar {
+                    background-color: white;
+                    padding: 1rem;
+                    border-radius: 8px;
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                    margin-bottom: 2rem !important;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                }
+
+                .download-title {
+                    font-size: 1rem;
+                    font-weight: 600;
+                    color: var(--text-color);
+                }
+
+                .download-buttons {
+                    display: flex;
+                    gap: 1rem;
+                }
+
+                .download-btn {
+                    padding: 0.5rem 1rem;
+                    border: none;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-weight: 500;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    transition: all 0.2s ease;
+                }
+
+                .download-btn.pdf {
+                    background-color: #e74c3c;
+                    color: white;
+                }
+
+                .download-btn.excel {
+                    background-color: #27ae60;
+                    color: white;
+                }
+
+                .download-btn.csv {
+                    background-color: #3498db;
+                    color: white;
+                }
+
+                .download-btn:hover {
+                    transform: translateY(-1px);
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                }
+
+                /* Icon styles */
+                .download-icon {
+                    width: 16px;
+                    height: 16px;
+                }
+                .dropdown {
+                    width: 50%;
+                    padding: 0.8rem;
+                    border: 1px solid var(--secondary-color);
+                    border-radius: 8px;
+                    font-size: 1rem;
+                    background-color: white;
+                    color: var(--text-color);
+                    text-align: center;
+                    cursor: pointer;
+                }
+                
+                /* Hover and focus effect */
+                .dropdown:hover, .dropdown:focus {
+                    border-color: var(--accent-color);
+                    outline: none;
+                }
+                /* Centered Subject Selection Dropdown */
+        .subject-dropdown-container {
+            margin: 2rem auto;
+            text-align: center;
+        }
+
+        .subject-dropdown-container label {
+            display: block;
+            font-weight: bold;
+            margin-top: 1rem;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .subject-dropdown-container select {
+            width: 50%;
+            padding: 0.8rem;
+            font-size: 1rem;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+            transition: all 0.3s ease;
+        }
+
+        .subject-dropdown-container input {
+            width: 50%;
+            padding: 0.8rem;
+            font-size: 1rem;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+            transition: all 0.3s ease;
+        }
+
+        .subject-dropdown-container select:hover {
+            border-color: var(--accent-color);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .subject-dropdown-container select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.2);
+        }
+        .low-attendance {
+            background-color: red !important;
+            color: white; /* Improves readability */
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="navbar-content">
+            <img src="..\static\images\Davv_LOGO_removed_bg.png" alt="University Logo" class="logo">
+            <span class="college-name">International Institute of Professional Studies</span>
+            <img src="..\static\images\iipslogo.jpg" alt="College Logo" class="logo">
+        </div>
+    </nav>
+
+    <div class="heading-container">
+        <h1 class="main-heading">Upasthiti@IIPS</h1>
+        <h3 class="sub-heading">Attendance Management System</h3>
+    </div>
+
+    <div class="container">
+        <div class="search-card">
+            <form class="search-form" id="sheetlinkForm" action="#" method="post">
+                <div class="form-group select-group">
+                    <label>Program</label>
+                    <select name="Program" id="program">
+                        <option value="">Select Course</option>
+                        <option value="B.Com.(Hons.)(3Y)">B.Com.(Hons.)(3Y)</option>
+                        <option value="MCA(5Y)">MCA(5Y)</option>
+                        <option value="MTech(IT)(5Y)">MTech(IT)(5Y)</option>
+                        <option value="MBA(MS)(5Y)">MBA(MS)(5Y)</option>
+                        <option value="MBA(TA)(5Y)">MBA(TA)(5Y)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Gsheet Link</label>
+                    <input type="text" name="link" id="gsheet-link" placeholder="Enter Gsheet Link" required>
+                </div>
+                <div class="form-group select-group" id="semester-dropdown" style="display: none;">
+                    <label>Semester</label>
+                    <select name="semester" id="semester-select">
+                        <option value="">Select Semester</option>
+                    </select>
+                </div>
+                 <!-- Date Selection -->
+                 <div class="form-group select-group" id="date1div" style="display: none;" >
+                    <label for="start-date">Start Date</label>
+                    <input type="date" id="start-date" style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;" />
+                </div>
+                <div class="form-group select-group" id="date2div" style="display: none;">
+                    <label for="end-date">End Date</label>
+                    <input type="date" id="end-date" style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;" />
+                </div>
+                <button type="submit" class="search-btn" id="submitButton">Select Semester</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Buttons to fetch attendance tables -->
+    <div class="options-container" id="options-container" style="display: none;">
+        <button id="overall-btn">Get Overall Attendance</button>
+        <button id="subject-btn">Get Attendance by Subject</button>
+    </div>
+    
+    <!-- Subject Selection Dropdown (Initially Hidden) -->
+  
+    
+    <div class="subject-dropdown-container" id="subject-dropdown-container" style="display: none;">
+        <label for="subject-select">Select a Subject:</label>
+        <select id="subject-select" name="subject"> 
+            <option value="">Select Subject</option>
+        </select>
+        <label>Enter Percentage Criteria</label>
+        <input type="text" name="pcriteria" id="pcriteria" placeholder="Enter Attendance Criteria in Percentage" >
+        <div class="fetchbuttoncontainer" id="fetchbysubject">
+            <button id="fetchbuttonforsubject">Fetch</button>
+        </div>
+    </div>
+    <!-- Area to display attendance tables -->
+    <div class="table-container" style="display: none;" id="attendance-container">
+          <!-- Add download bar -->
+                <div class="download-bar">
+                    <div class="download-title">Download Attendance</div>
+                    <div class="download-buttons">
+                        
+                        <button class="download-btn excel" onclick="downloadExcel()">
+                            <svg class="download-icon" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M4 18h12a2 2 0 002-2V6l-6-6H4a2 2 0 00-2 2v14a2 2 0 002 2zm0-16h7v5h5v9H4V2z"/>
+                            </svg>
+                            Excel
+                        </button>
+                        
+                    </div>
+                </div>
+        <div class="table-wrapper" id="attendance-data">
+        </div>
+    </div>
+    <script>
+        let percentageData = []; // Global variable to store percentage dataframe
+        let calledBySubject = false; // Track which function is calling displayTable()
+        document.addEventListener("DOMContentLoaded", function () {
+            let submitCount = 0;
+            const form = document.getElementById("sheetlinkForm");
+            const semesterDropdown = document.getElementById("semester-dropdown");
+            const semesterSelect = document.getElementById("semester-select");
+            const programSelect = document.getElementById("program");
+            const gsheetInput = document.getElementById("gsheet-link");
+            const submitButton = document.getElementById("submitButton");
+            const optionsContainer = document.getElementById("options-container");
+            const attendanceData = document.getElementById("attendance-data");
+            const attendanceContainer = document.getElementById("attendance-container");
+            const date1=document.getElementById("start-date");
+            const date2=document.getElementById("end-date");
+            const date1div=document.getElementById("date1div");
+            const date2div=document.getElementById("date2div");
+            
+        
+            // Handle form submission
+            form.addEventListener("submit", function (event) {
+                event.preventDefault();
+                if (submitCount === 0) {
+                    authenticateWorkbook();  // Authenticate Google Sheet and fetch available sheets
+                } else {
+                    submitFinalData();  // Proceed with fetching attendance
+                    submitCount = 0;
+                }
+            });
+        
+            // Authenticate Google Sheet and fetch available semesters (sheets)
+            function authenticateWorkbook() {
+                const course = programSelect.value;
+                const sheetUrl = gsheetInput.value;
+        
+                if (!course || !sheetUrl) {
+                    alert("Please select a program and enter a GSheet link!");
+                    return;
+                }
+        
+                fetch("/authenticate_and_get_workbook", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ course, sheet_url: sheetUrl })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert("Error: " + data.error);
+                        return;
+                    }
+        
+                    // Populate the semester dropdown
+                    semesterSelect.innerHTML = '<option value="">Select Semester</option>';
+                    data.sheets.forEach(sheet => {
+                        semesterSelect.innerHTML += `<option value="${sheet}">${sheet}</option>`;
+                    });
+        
+                    // Show the semester dropdown
+                    semesterDropdown.style.display = "block";
+                    date1div.style.display="block";
+                    date2div.style.display="block";
+                    submitButton.textContent = "Fetch Attendance";
+                    submitCount++;
+                })
+                .catch(error => console.error("Error authenticating workbook:", error));
+            }
+        
+            // Fetch and initialize data for the selected semester
+            function submitFinalData() {
+                const selectedSemester = semesterSelect.value;
+                const course = programSelect.value;
+                const date_1=date1.value;
+                const date_2=date2.value;
+                
+
+        
+                if (!selectedSemester) {
+                    alert("Please select a semester before proceeding!");
+                    return;
+                }
+        
+                // Call the API to initialize data
+                fetch(`/fetch_data?sheet=${selectedSemester}&course=${course}&date1=${date_1}&date2=${date_2}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert("Error fetching initial data: " + data.error);
+                    } else {
+                        console.log(data.message); // Logs: "Data initialized successfully"
+                }
+                    })
+                .catch(error => console.error("Error initializing data:", error));
+
+                optionsContainer.style.display = "block";
+                optionsContainer.style.paddingBottom = "1rem"; // Show the attendance buttons
+            }
+        
+            // Fetch and display overall attendance data
+            document.getElementById("overall-btn").addEventListener("click", function () {
+                fetchAttendanceData("/overall_attendance");
+            });
+        
+            // Fetch and display subject-wise attendance
+            document.getElementById("subject-btn").addEventListener("click", function () {
+                fetchSubjects();  // Fetch subject list first
+            });
+        
+            // Fetch available subjects from the backend
+            function fetchSubjects() {
+                const selectedSemester = semesterSelect.value;
+                const course = programSelect.value;
+        
+                if (!selectedSemester) {
+                    alert("Please select a semester first!");
+                    return;
+                }
+        
+                fetch("/get_subjects")
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.subjects || data.subjects.length === 0) {
+                        alert("No subjects found.");
+                        return;
+                    }
+                    displaySubjectSelection(data.subjects);  // Show subject selection dropdown
+                })
+                .catch(error => console.error("Error fetching subjects:", error));
+            }
+        
+            // Display subject dropdown and fetch attendance based on selection
+            function displaySubjectSelection(subjects) {
+                let dropdownContainer = document.getElementById("subject-dropdown-container");
+                let dropdown = document.getElementById("subject-select");
+        
+                
+        
+                // Populate subject dropdown
+                dropdown.innerHTML = '<option value="" disabled selected>Select a subject</option>';
+                subjects.forEach(subject => {
+                    dropdown.innerHTML += `<option value="${subject}">${subject}</option>`;
+                });
+        
+                // Add fetch button to get attendance
+                let fetchButton = document.getElementById("fetchbuttonforsubject");
+                fetchButton.onclick = function () {
+                    fetchAttendanceBySubject(dropdown.value);
+                };
+        
+                dropdownContainer.appendChild(fetchButton);
+                dropdownContainer.style.display = "block";
+            }
+            
+            
+        
+            // Fetch attendance for the selected subject
+            function fetchAttendanceBySubject(subject) {
+                calledBySubject = true; // Indicate fetchAttendanceBySubject() is calling
+                
+            
+                const selectedSemester = semesterSelect.value;
+                const course = programSelect.value;
+        
+                if (!selectedSemester) {
+                    alert("Please select a semester first!");
+                    return;
+                }
+                if (!subject) {
+                    alert("Please select a subject first!");
+                    return;
+                }
+        
+                // Fetch subject-wise attendance data
+                fetch(`/subjectwise_attendance?subject=${encodeURIComponent(subject)}`, {
+                    method: "POST"
+                })
+                .then(response => response.json())
+                .then(data => {
+                    displayTable(data);  // Display attendance data in a table
+                })
+                .catch(error => console.error("Error fetching subjectwise attendance:", error));
+            }
+        
+            // Fetch attendance data (for overall attendance)
+            function fetchAttendanceData(endpoint) {
+                calledBySubject = false; // Indicate fetchAttendanceData() is calling
+                percentageData = []; // Reset percentageData to prevent conflicts
+            
+                const selectedSemester = semesterSelect.value;
+                const course = programSelect.value;
+                
+            
+                if (!selectedSemester) {
+                    alert("Please select a semester first!");
+                    return;
+                }
+            
+                let url = `${endpoint}?sheet=${selectedSemester}&course=${course}`;
+            
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        displayTable(data.actual);  // Display actual attendance
+                        percentageData = data.percentage || []; // Store percentage dataframe for later
+                    })
+                    .catch(error => console.error("Error fetching attendance:", error));
+            }
+        
+            // Display fetched attendance data in a table
+           
+
+            function displayTable(data) {
+                const percentageCriteria = document.getElementById("pcriteria").value.trim();
+                let criteriaValue = parseFloat(percentageCriteria);
+            
+                let applyCriteria = (calledBySubject && percentageCriteria.trim() !== "" && !isNaN(criteriaValue) && criteriaValue >= 0 && criteriaValue <= 100) ? true : false;
+
+            
+                if (!data || data.length === 0) {
+                    attendanceData.innerHTML = "<p>No data available.</p>";
+                    return;
+                }
+            
+                let tableHtml = "<table border='1' id='attendance-table'><thead><tr>";
+                Object.keys(data[0]).forEach(key => {
+                    tableHtml += `<th>${key}</th>`;
+                });
+                tableHtml += "</tr></thead><tbody>";
+            
+                data.forEach(row => {
+                    let rowClass = ""; // Default row class (no background color)
+                    let rowValues = Object.values(row);
+            
+                    if (applyCriteria && rowValues.length >= 3) {
+                        let secondColumnValue = parseFloat(rowValues[3]);
+                        if (!isNaN(secondColumnValue) && secondColumnValue < criteriaValue) {
+                            rowClass = "low-attendance"; // Apply red background only if called by fetchAttendanceBySubject
+                        }
+                    }
+            
+                    tableHtml += `<tr class="${rowClass}">`;
+                    rowValues.forEach(value => {
+                        tableHtml += `<td>${value}</td>`;
+                    });
+                    tableHtml += "</tr>";
+                });
+            
+                tableHtml += "</tbody></table>";
+            
+                attendanceData.innerHTML = tableHtml;
+                attendanceContainer.style.display = "block";
+                attendanceContainer.style.marginTop = "1rem";
+            }
+            
+            
+            
+            
+        });
+        
+        // Download Excel file
+        async function downloadExcel() {
+            const table = document.querySelector("#attendance-data table");
+            const course = document.getElementById("program").value;
+            const semester = document.getElementById("semester-select").value;
+            const subject = document.getElementById("subject-select").value;
+            let filename= course+"_"+semester+"_attendance_by_"+subject;
+           
+            if (!table) {
+                alert("No table found! Please generate the table first.");
+                return;
+            }
+        
+            // Initialize ExcelJS Workbook
+            let workbook = new ExcelJS.Workbook();
+            let worksheet1 = workbook.addWorksheet("Actual Attendance");
+        
+            // Extract headers from displayed table
+            const headers = [];
+            table.querySelectorAll("thead th").forEach(th => headers.push(th.innerText));
+            worksheet1.addRow(headers).font = { bold: true };
+        
+            // Extract table rows for "actual" attendance
+            const rows = table.querySelectorAll("tbody tr");
+            rows.forEach(row => {
+                const rowData = [];
+                let isLowAttendance = row.classList.contains("low-attendance");
+        
+                row.querySelectorAll("td").forEach(td => {
+                    rowData.push(td.innerText);
+                });
+        
+                let newRow = worksheet1.addRow(rowData);
+        
+                // Apply red background **only if fetchAttendanceBySubject() was used**
+                if (calledBySubject && isLowAttendance) {
+                    newRow.eachCell(cell => {
+                        cell.fill = {
+                            type: "pattern",
+                            pattern: "solid",
+                            fgColor: { argb: "FFFF0000" } // Red background
+                        };
+                        cell.font = { color: { argb: "FFFFFFFF" } }; // White text
+                    });
+                }
+            });
+        
+            // If fetchAttendanceData() was used, add "Percentage Attendance" sheet
+            if (!calledBySubject && percentageData.length > 0) {
+                let worksheet2 = workbook.addWorksheet("Percentage Attendance");
+                filename=course+"_"+semester+"_overall_attendance";
+                // Extract headers for "percentage" dataframe
+                const percentageHeaders = Object.keys(percentageData[0]);
+                worksheet2.addRow(percentageHeaders).font = { bold: true };
+        
+                // Extract rows for "percentage" dataframe
+                percentageData.forEach(row => {
+                    worksheet2.addRow(Object.values(row));
+                });
+            }
+        
+            // Generate the file and trigger download
+            const buffer = await workbook.xlsx.writeBuffer();
+            const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+            saveAs(blob, filename+".xlsx");
+        }
+        
+        
+        
+        
+        
+       </script>
+        
+</body>
+
+</html>
