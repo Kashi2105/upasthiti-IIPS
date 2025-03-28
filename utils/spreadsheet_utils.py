@@ -119,8 +119,9 @@ def get_roll_name_and_clean(data,course,date1,date2):
             new_col=roll_number +" "+ name
             col_dict[col]=new_col
     data=data.rename(columns=col_dict)
-    data["Timestamp"] = pd.to_datetime(data["Timestamp"], format="mixed", dayfirst=True)
+    data["Timestamp"] = pd.to_datetime(data["Timestamp"], format="%m/%d/%Y %H:%M:%S", dayfirst=True)
     data["Date"]=pd.to_datetime(data["Timestamp"].dt.normalize())
+    print(data["Date"])
     data["Time"]=data["Timestamp"].dt.time
     data["Select Subject"]=data["Select Subject"].astype("category")
     global subject_list
@@ -130,33 +131,40 @@ def get_roll_name_and_clean(data,course,date1,date2):
     filtered_data=data
     if date1 and date2:
         # Convert user input to datetime64[ns]
-        date1 = pd.to_datetime(date1, format="%d/%m/%Y", dayfirst=True) if date1 else None
-        date2 = pd.to_datetime(date2, format="%d/%m/%Y", dayfirst=True) if date2 else None
+        date1 = pd.to_datetime(date1, format="%Y-%m-%d", dayfirst=True) if date1 else None
+        date2 = pd.to_datetime(date2, format="%Y-%m-%d", dayfirst=True) if date2 else None
         # Find the closest available date if not found
         if date1 and not (data["Date"] == date1).any():
+            print(date1)
             date1 = data[data["Date"] > date1]["Date"].min()  # Get next closest date
         if date2 and not (data["Date"] == date2).any():
+            print(date2)
             date2 = data[data["Date"] < date2]["Date"].max()  # Get previous closest date
+        print(date1,date2)
         # Filter DataFrame
         filtered_data = data[(data["Date"] >= date1) & (data["Date"] <= date2)]
+        print(filtered_data["Date"])
     return filtered_data
 
 def get_bet_dates(data,date1,date2):
    # Convert user input to datetime64[ns]
-    date1 = pd.to_datetime(date1, format="%d/%m/%Y", dayfirst=True) if date1 else None
-    date2 = pd.to_datetime(date2, format="%d/%m/%Y", dayfirst=True) if date2 else None
+    date1 = pd.to_datetime(date1, format="%Y-%m-%d", dayfirst=True) if date1 else None
+    date2 = pd.to_datetime(date2, format="%Y-%m-%d", dayfirst=True) if date2 else None
     # Find the closest available date if not found
     if date1 and not (data["Date"] == date1).any():
-        date1 = data[data["Date"] > date1]["Date"].min()  # Get next closest date
+        date1 = data[data["Date"] > date1]["Date"].min()
+        print(date1)# Get next closest date
     if date2 and not (data["Date"] == date2).any():
         date2 = data[data["Date"] < date2]["Date"].max()  # Get previous closest date
+        print(date2)
     # Filter DataFrame
     filtered_data = data[(data["Date"] >= date1) & (data["Date"] <= date2)]
+    print(filtered_data["Date"])
     print("shape of filtered data:",filtered_data.shape)
     date_filtered_data=get_overall_attendance(filtered_data)
     return date_filtered_data
     
 if __name__ == "__main__":
-    workbook=authenticate_and_get_sheet("https://docs.google.com/spreadsheets/d/1KFjU2WfAwAVTH3C9ZNWd3aZYGkm_nuWc-hePuB1lduY/edit?gid=1499235755#gid=1499235755")
-    data=fetch_sheet_data(workbook,"MBA(MS)(5Y)","I Sem Sec-A",None,None)   
-    print(get_subjectwise(data,"IM-102 Financial Accounting"))
+    workbook=authenticate_and_get_sheet("https://docs.google.com/spreadsheets/d/1VyqArt8jWYCxgqDdKv7RBW7_KF9pBz5Hm3vsUA6iUq4/edit?gid=967537692#gid=967537692")
+    data=fetch_sheet_data(workbook,"MCA(5Y)","Sem VIII-A","2025-02-01","2025-02-15")   
+    print(get_subjectwise(data,"IC-812 Theory of Computation"))
